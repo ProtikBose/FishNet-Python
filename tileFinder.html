@@ -1,0 +1,87 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
+  <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+  <style type="text/css">
+    table th { text-align: right; }
+  </style>
+</head>
+<body>
+  <table>
+    <tr>
+      <th>Lat / Lon:</th>
+      <td></td>
+      <td><input type='text' id='lat'></td>
+      <td><input type='text' id='lon'></td>
+      <td></td>
+      <td><input type='button' value='go' onclick='getTile()'></td>
+    </tr>
+    <tr>
+      <th>X / Y:</th>
+      <td>
+        <input type='button' value='<' onclick='showTile(parseFloat($("#x").val()) - 1, parseFloat($("#y").val()));'>
+        <input type='button' value='>' onclick='showTile(parseFloat($("#x").val()) + 1, parseFloat($("#y").val()));'>
+      </td>
+      <td><input type='text' id='x'></td>
+      <td><input type='text' id='y'></td>
+      <td>
+        <input type='button' value='v' onclick='showTile(parseFloat($("#x").val()), parseFloat($("#y").val()) + 1);'>
+        <input type='button' value='^' onclick='showTile(parseFloat($("#x").val()), parseFloat($("#y").val()) - 1);'>
+      </td>
+      <td>
+        <input type='button' value='go' onclick='showTile(parseFloat($("#x").val()), parseFloat($("#y").val()));'>
+      </td>
+    </tr>
+  </table>
+  <img id='image' style='width:512px;height:512px;float:left;'/>
+  
+  <script type='text/javascript'>
+    function showTile(x, y) {
+      // Convert to numbers in case they are not
+      x = parseFloat(x);
+      y = parseFloat(y);
+      
+      // Update the tile ID text boxes
+      $('#x').val(x);
+      $('#y').val(y);
+      
+      // Update the latitude/longitude based on the tile IDs and a fixed zoom level (17)
+      $('#lat').val(tileYToLat(y, 17));
+      $('#lon').val(tileXToLon(x, 17));
+
+      // Update the image shown from Google Maps
+      $('#image').attr('src', 'http://mts1.google.com/vt/lyrs=m&x=' + x + '&y=' + y + '&z=17&s=Gal&apistyle=s.t%2A3%7Cs.e%3Al%7Cp.v%3Aoff%2Cs.t%2A3%7Cs.e%3Ag%7Cp.w%3A0.01');
+    }
+
+    function tileXToLon(tileX, zoom) {
+      var n = Math.pow(2, zoom);
+      return tileX / n * 360 - 180;
+    }
+
+    function tileYToLat(tileY, zoom) {
+      var n = Math.pow(2, zoom);
+      return Math.atan(Math.sinh(Math.PI * (1 - 2 * tileY / n))) * 180 / Math.PI;
+    }
+
+    function lon2tile(lon, zoom) {
+      return Math.floor((lon + 180) / 360 * Math.pow(2, zoom));
+    }
+
+    function lat2tile(lat, zoom) {
+      return Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoom));
+    }
+    
+    function getTile() {
+      var lat = parseFloat($('#lat').val());
+      var lon = parseFloat($('#lon').val());
+      var y = lat2tile(lat, 17);
+      var x = lon2tile(lon, 17);
+      showTile(x, y);
+    }
+    
+    // Initialize with an example tile
+    showTile(24780, 52610);
+  </script>
+</body>
+</html>
